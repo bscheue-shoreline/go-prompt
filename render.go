@@ -2,6 +2,7 @@ package prompt
 
 import (
 	"runtime"
+	"strings"
 
 	"github.com/c-bata/go-prompt/internal/debug"
 	runewidth "github.com/mattn/go-runewidth"
@@ -166,8 +167,15 @@ func (r *Render) renderCompletion(buf *Buffer, completions *CompletionManager) {
 	r.out.SetColor(DefaultColor, DefaultColor, false)
 }
 
+func getCompletionSuffix(line, hist string) string {
+	if strings.HasPrefix(hist, line) {
+		return hist[len(line):]
+	}
+	return ""
+}
+
 // Render renders to the console.
-func (r *Render) Render(buffer *Buffer, completion *CompletionManager) {
+func (r *Render) Render(buffer *Buffer, completion *CompletionManager, history *History) {
 	// In situations where a pseudo tty is allocated (e.g. within a docker container),
 	// window size via TIOCGWINSZ is not immediately available and will result in 0,0 dimensions.
 	if r.col == 0 {
@@ -177,8 +185,9 @@ func (r *Render) Render(buffer *Buffer, completion *CompletionManager) {
 	r.move(r.previousCursor, 0)
 
 	line := buffer.Text()
+	hist := getCompletionSuffix(line, history.MostRecent())
 	prefix := r.getCurrentPrefix()
-	cursor := runewidth.StringWidth(prefix) + runewidth.StringWidth(line)
+	cursor := runewidth.StringWidth(prefix) + runewidth.StringWidth(line + hist)
 
 	// prepare area
 	_, y := r.toPos(cursor)
@@ -196,8 +205,21 @@ func (r *Render) Render(buffer *Buffer, completion *CompletionManager) {
 	r.renderPrefix()
 	r.out.SetColor(r.inputTextColor, r.inputBGColor, false)
 	r.out.WriteStr(line)
+	r.out.SetColor(r.scrollbarThumbColor, r.inputBGColor, false)
+	r.out.WriteStr(hist)
 	r.out.SetColor(DefaultColor, DefaultColor, false)
 	r.lineWrap(cursor)
+
+	line += hist
+
+
+	// r.out.WriteStr(" 1234")
+	// r.out.CursorBackward(2)
+
+	// r.out.SetColor(r.inputTextColor, r.inputBGColor, false)
+	// suffix := buffer.Document().TextAfterCursor()
+	// r.out.SetColor(DefaultColor, DefaultColor, false)
+	// r.out.WriteStr(suffix + "<foo>")
 
 	r.out.EraseDown()
 

@@ -38,6 +38,14 @@ func (h *History) SearchReset(begin bool) {
 	}
 }
 
+func (h *History) MostRecent() string {
+	hlen := len(h.histories)
+	if hlen == 0 {
+		return ""
+	}
+	return h.histories[hlen-1]
+}
+
 func (h *History) Search(pattern string, fwd bool, skipCur bool) string {
 	hlen := len(h.histories)
 	if skipCur {

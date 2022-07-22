@@ -1,7 +1,7 @@
 package prompt
 
 // KeyBindFunc receives buffer and processed it.
-type KeyBindFunc func(*Buffer)
+type KeyBindFunc func(*Buffer, *History)
 
 // KeyBind represents which key should do what operation.
 type KeyBind struct {
@@ -49,7 +49,7 @@ var commonKeyBindings = []KeyBind{
 	// Right allow: Forward one character
 	{
 		Key: Right,
-		Fn:  GoRightChar,
+		Fn:  GoRightCharOrComplete,
 	},
 	// Left allow: Backward one character
 	{

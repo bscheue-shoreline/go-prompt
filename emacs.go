@@ -42,7 +42,7 @@ var emacsKeyBindings = []KeyBind{
 	// Go to the End of the line
 	{
 		Key: ControlE,
-		Fn: func(buf *Buffer) {
+		Fn: func(buf *Buffer, hist *History) {
 			x := []rune(buf.Document().TextAfterCursor())
 			buf.CursorRight(len(x))
 		},
@@ -50,7 +50,7 @@ var emacsKeyBindings = []KeyBind{
 	// Go to the beginning of the line
 	{
 		Key: ControlA,
-		Fn: func(buf *Buffer) {
+		Fn: func(buf *Buffer, hist *History) {
 			x := []rune(buf.Document().TextBeforeCursor())
 			buf.CursorLeft(len(x))
 		},
@@ -58,7 +58,7 @@ var emacsKeyBindings = []KeyBind{
 	// Cut the Line after the cursor
 	{
 		Key: ControlK,
-		Fn: func(buf *Buffer) {
+		Fn: func(buf *Buffer, hist *History) {
 			x := []rune(buf.Document().TextAfterCursor())
 			buf.Delete(len(x))
 		},
@@ -66,7 +66,7 @@ var emacsKeyBindings = []KeyBind{
 	// Cut/delete the Line before the cursor
 	{
 		Key: ControlU,
-		Fn: func(buf *Buffer) {
+		Fn: func(buf *Buffer, hist *History) {
 			x := []rune(buf.Document().TextBeforeCursor())
 			buf.DeleteBeforeCursor(len(x))
 		},
@@ -74,7 +74,7 @@ var emacsKeyBindings = []KeyBind{
 	// Delete character under the cursor
 	{
 		Key: ControlD,
-		Fn: func(buf *Buffer) {
+		Fn: func(buf *Buffer, hist *History) {
 			if buf.Text() != "" {
 				buf.Delete(1)
 			}
@@ -83,35 +83,35 @@ var emacsKeyBindings = []KeyBind{
 	// Backspace
 	{
 		Key: ControlH,
-		Fn: func(buf *Buffer) {
+		Fn: func(buf *Buffer, hist *History) {
 			buf.DeleteBeforeCursor(1)
 		},
 	},
 	// Right allow: Forward one character
 	{
 		Key: ControlF,
-		Fn: func(buf *Buffer) {
+		Fn: func(buf *Buffer, hist *History) {
 			buf.CursorRight(1)
 		},
 	},
 	// Left allow: Backward one character
 	{
 		Key: ControlB,
-		Fn: func(buf *Buffer) {
+		Fn: func(buf *Buffer, hist *History) {
 			buf.CursorLeft(1)
 		},
 	},
 	// Cut the Word before the cursor.
 	{
 		Key: ControlW,
-		Fn: func(buf *Buffer) {
+		Fn: func(buf *Buffer, hist *History) {
 			buf.DeleteBeforeCursor(len([]rune(buf.Document().GetWordBeforeCursorWithSpace())))
 		},
 	},
 	// Clear the Screen, similar to the clear command
 	{
 		Key: ControlL,
-		Fn: func(buf *Buffer) {
+		Fn: func(buf *Buffer, hist *History) {
 			consoleWriter.EraseScreen()
 			consoleWriter.CursorGoTo(0, 0)
 			debug.AssertNoError(consoleWriter.Flush())
