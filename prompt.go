@@ -60,7 +60,7 @@ func (p *Prompt) Run() {
 		p.completion.Update(*p.editBuf.Document())
 	}
 
-	p.renderer.Render(p.buf, p.completion)
+	p.renderer.Render(p.buf, p.completion, p.history)
 
 	bufCh := make(chan []byte, 128)
 	stopReadBufCh := make(chan struct{})
@@ -91,7 +91,7 @@ func (p *Prompt) Run() {
 
 				p.completion.Update(*p.editBuf.Document())
 
-				p.renderer.Render(p.buf, p.completion)
+				p.renderer.Render(p.buf, p.completion, p.history)
 
 				if p.exitChecker != nil && p.exitChecker(e.input, true) {
 					p.skipTearDown = true
@@ -103,11 +103,11 @@ func (p *Prompt) Run() {
 				go p.handleSignals(exitCh, winSizeCh, stopHandleSignalCh)
 			} else {
 				p.completion.Update(*p.editBuf.Document())
-				p.renderer.Render(p.buf, p.completion)
+				p.renderer.Render(p.buf, p.completion, p.history)
 			}
 		case w := <-winSizeCh:
 			p.renderer.UpdateWinSize(w)
-			p.renderer.Render(p.buf, p.completion)
+			p.renderer.Render(p.buf, p.completion, p.history)
 		case code := <-exitCh:
 			p.renderer.BreakLine(p.buf)
 			p.tearDown()
@@ -149,7 +149,7 @@ func (p *Prompt) updateHistSearch(finalize bool) {
 			p.buf.InsertText(found, false, true)
 		}
 		//p.completion.Update(*NewBuffer().Document())
-		p.renderer.Render(p.buf, p.completion)
+		p.renderer.Render(p.buf, p.completion, p.history)
 	}
 }
 
@@ -208,7 +208,7 @@ func (p *Prompt) feed(b []byte) (shouldExit bool, exec *Exec) {
 			//p.completion.Reset()
 			p.completion.Enable(true)
 			p.completion.Update(*p.buf.Document())
-			p.renderer.Render(p.buf, p.completion)
+			p.renderer.Render(p.buf, p.completion, nil)
 		}
 	case ControlR:
 		p.histSearchFwd = false
@@ -292,7 +292,7 @@ func (p *Prompt) handleKeyBinding(key Key) bool {
 	for i := range commonKeyBindings {
 		kb := commonKeyBindings[i]
 		if kb.Key == key {
-			kb.Fn(p.editBuf)
+			kb.Fn(p.editBuf, p.history)
 		}
 	}
 
@@ -300,7 +300,7 @@ func (p *Prompt) handleKeyBinding(key Key) bool {
 		for i := range emacsKeyBindings {
 			kb := emacsKeyBindings[i]
 			if kb.Key == key {
-				kb.Fn(p.editBuf)
+				kb.Fn(p.editBuf, p.history)
 			}
 		}
 	}
@@ -309,7 +309,7 @@ func (p *Prompt) handleKeyBinding(key Key) bool {
 	for i := range p.keyBindings {
 		kb := p.keyBindings[i]
 		if kb.Key == key {
-			kb.Fn(p.editBuf)
+			kb.Fn(p.editBuf, p.history)
 		}
 	}
 	if p.exitChecker != nil && p.exitChecker(p.editBuf.Text(), false) {
@@ -322,7 +322,7 @@ func (p *Prompt) handleASCIICodeBinding(b []byte) bool {
 	checked := false
 	for _, kb := range p.ASCIICodeBindings {
 		if bytes.Equal(kb.ASCIICode, b) {
-			kb.Fn(p.editBuf)
+			kb.Fn(p.editBuf, p.history)
 			checked = true
 		}
 	}
@@ -340,7 +340,7 @@ func (p *Prompt) Input() string {
 		p.completion.Update(*p.editBuf.Document())
 	}
 
-	p.renderer.Render(p.buf, p.completion)
+	p.renderer.Render(p.buf, p.completion, nil)
 	bufCh := make(chan []byte, 128)
 	stopReadBufCh := make(chan struct{})
 	go p.readBuffer(bufCh, stopReadBufCh)
@@ -358,7 +358,7 @@ func (p *Prompt) Input() string {
 				return e.input
 			} else {
 				p.completion.Update(*p.editBuf.Document())
-				p.renderer.Render(p.buf, p.completion)
+				p.renderer.Render(p.buf, p.completion, nil)
 			}
 		default:
 			time.Sleep(10 * time.Millisecond)

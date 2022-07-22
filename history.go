@@ -38,6 +38,20 @@ func (h *History) SearchReset(begin bool) {
 	}
 }
 
+func (h *History) GetFishOpt(line string) string {
+	hlen := len(h.histories)
+	if hlen == 0 || line == "" {
+		return ""
+	}
+	for idx := 0; idx < hlen; idx++ {
+		curr := h.histories[hlen-idx-1]
+		if strings.HasPrefix(curr, line) {
+			return curr[len(line):]
+		}
+	}
+	return ""
+}
+
 func (h *History) Search(pattern string, fwd bool, skipCur bool) string {
 	hlen := len(h.histories)
 	if skipCur {
